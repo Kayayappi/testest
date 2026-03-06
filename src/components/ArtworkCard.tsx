@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Artwork } from "@/lib/mock";
-import LicenseBadges from "./LicenseBadges";
+import AuthorBadge from "./AuthorBadge";
 
 interface ArtworkCardProps {
   artwork: Artwork;
@@ -21,15 +21,23 @@ export default function ArtworkCard({ artwork }: ArtworkCardProps) {
             unoptimized
           />
         </div>
-        <div className="p-3 space-y-2">
+        <div className="p-3 space-y-1.5">
+          <AuthorBadge
+            artistId={artwork.artistId}
+            artistName={artwork.artistName}
+            size="sm"
+          />
           <h3 className="text-sm font-semibold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
             {artwork.title}
           </h3>
-          <p className="text-xs text-gray-500">{artwork.artistName}</p>
-          <LicenseBadges terms={artwork.licenseTerms} compact />
-          <p className="text-sm font-bold text-gray-900">
-            ¥{artwork.priceJpy.toLocaleString()}
-          </p>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-400 flex items-center gap-1">
+              {"\u2661"} {artwork.likes}
+            </span>
+            <span className="text-xs text-gray-400">
+              &yen;{artwork.priceJpy.toLocaleString()}
+            </span>
+          </div>
         </div>
       </div>
     </Link>

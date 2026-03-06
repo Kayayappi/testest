@@ -41,6 +41,7 @@ export default function WorksFilter({ artworks }: WorksFilterProps) {
     <>
       {/* Filters */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-8 space-y-4">
+        <p className="text-xs text-gray-400">License Filters — 用途別に作品を絞り込めます</p>
         <div>
           <input
             type="text"
@@ -53,7 +54,7 @@ export default function WorksFilter({ artworks }: WorksFilterProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">商用利用</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">用途: 商用</label>
             <div className="flex flex-wrap gap-1">
               {commercialOptions.map((opt) => (
                 <button
@@ -72,7 +73,7 @@ export default function WorksFilter({ artworks }: WorksFilterProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">成人向け</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">用途: 成人向け</label>
             <div className="flex flex-wrap gap-1">
               {adultOptions.map((opt) => (
                 <button
@@ -91,7 +92,7 @@ export default function WorksFilter({ artworks }: WorksFilterProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">学習タイプ</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">学習許諾</label>
             <div className="flex flex-wrap gap-1">
               {trainingOptions.map((opt) => (
                 <button
@@ -110,7 +111,7 @@ export default function WorksFilter({ artworks }: WorksFilterProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">並び替え</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">並び順</label>
             <div className="flex flex-wrap gap-1">
               {sortOptions.map((opt) => (
                 <button

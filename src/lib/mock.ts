@@ -20,6 +20,8 @@ export interface Artwork {
   artistName: string;
   priceJpy: number;
   licenseTerms: LicenseTerms;
+  likes: number;
+  comments: number;
 }
 
 export interface Artist {
@@ -116,6 +118,8 @@ export const artworks: Artwork[] = [
       trainingType: "light",
       redistribution: "denied",
     },
+    likes: 234,
+    comments: 12,
   },
   {
     id: "art-2",
@@ -132,6 +136,8 @@ export const artworks: Artwork[] = [
       trainingType: "light",
       redistribution: "consult",
     },
+    likes: 187,
+    comments: 8,
   },
   {
     id: "art-3",
@@ -148,6 +154,8 @@ export const artworks: Artwork[] = [
       trainingType: "standard",
       redistribution: "denied",
     },
+    likes: 456,
+    comments: 23,
   },
   {
     id: "art-4",
@@ -164,6 +172,8 @@ export const artworks: Artwork[] = [
       trainingType: "standard",
       redistribution: "denied",
     },
+    likes: 312,
+    comments: 15,
   },
   {
     id: "art-5",
@@ -180,6 +190,8 @@ export const artworks: Artwork[] = [
       trainingType: "light",
       redistribution: "allowed",
     },
+    likes: 389,
+    comments: 19,
   },
   {
     id: "art-6",
@@ -196,6 +208,8 @@ export const artworks: Artwork[] = [
       trainingType: "light",
       redistribution: "allowed",
     },
+    likes: 278,
+    comments: 14,
   },
   {
     id: "art-7",
@@ -212,6 +226,8 @@ export const artworks: Artwork[] = [
       trainingType: "standard",
       redistribution: "consult",
     },
+    likes: 156,
+    comments: 7,
   },
   {
     id: "art-8",
@@ -228,6 +244,8 @@ export const artworks: Artwork[] = [
       trainingType: "light",
       redistribution: "consult",
     },
+    likes: 203,
+    comments: 11,
   },
   {
     id: "art-9",
@@ -244,6 +262,8 @@ export const artworks: Artwork[] = [
       trainingType: "strong",
       redistribution: "allowed",
     },
+    likes: 498,
+    comments: 27,
   },
   {
     id: "art-10",
@@ -260,6 +280,8 @@ export const artworks: Artwork[] = [
       trainingType: "strong",
       redistribution: "allowed",
     },
+    likes: 345,
+    comments: 18,
   },
   {
     id: "art-11",
@@ -276,6 +298,8 @@ export const artworks: Artwork[] = [
       trainingType: "light",
       redistribution: "denied",
     },
+    likes: 89,
+    comments: 3,
   },
   {
     id: "art-12",
@@ -292,6 +316,8 @@ export const artworks: Artwork[] = [
       trainingType: "light",
       redistribution: "denied",
     },
+    likes: 134,
+    comments: 5,
   },
 ];
 
