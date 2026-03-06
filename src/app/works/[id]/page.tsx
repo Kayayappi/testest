@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,6 +33,14 @@ export function generateStaticParams() {
   return artworks.map((a) => ({ id: a.id }));
 }
 
+export async function generateMetadata({ params }: WorkDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const artwork = getArtworkById(id);
+  return {
+    title: artwork ? `Work: ${artwork.title} | Artli` : "Work Not Found | Artli",
+  };
+}
+
 interface WorkDetailPageProps {
   params: Promise<{ id: string }>;
 }
@@ -49,7 +58,7 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
     .slice(0, 4);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" data-page="work-detail" data-id={id}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Image */}
         <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100">
@@ -67,7 +76,7 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
         {/* Info */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{artwork.title}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Work: {artwork.title} | Artli</h1>
             <Link
               href={`/artists/${artwork.artistId}`}
               className="mt-1 inline-block text-indigo-600 hover:text-indigo-700 font-medium"

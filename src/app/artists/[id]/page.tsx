@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,6 +8,14 @@ import ArtworkCard from "@/components/ArtworkCard";
 
 export function generateStaticParams() {
   return artists.map((a) => ({ id: a.id }));
+}
+
+export async function generateMetadata({ params }: ArtistDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const artist = getArtistById(id);
+  return {
+    title: artist ? `Artist: ${artist.name} | Artli` : "Artist Not Found | Artli",
+  };
 }
 
 interface ArtistDetailPageProps {
@@ -27,7 +36,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" data-page="artist-detail" data-id={id}>
       {/* Profile */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-10">
         <div className="flex flex-col sm:flex-row items-start gap-6">
@@ -40,7 +49,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
             unoptimized
           />
           <div className="space-y-3 min-w-0">
-            <h1 className="text-3xl font-bold text-gray-900">{artist.name}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Artist: {artist.name} | Artli</h1>
             <p className="text-gray-600 leading-relaxed">{artist.bio}</p>
             <TagPills tags={artist.styleTags} />
             {artist.links.length > 0 && (
