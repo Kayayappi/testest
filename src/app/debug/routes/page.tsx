@@ -18,7 +18,7 @@ const routes = [
 
 export default function DebugRoutesPage() {
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10" data-page="debug-routes">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10" data-page="debug">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Debug: Route List</h1>
       <p className="text-sm text-gray-500 mb-6">
         各リンクをクリックして、ページソースの &lt;title&gt;、&lt;h1&gt;、data-page 属性がページごとに異なることを確認できます。

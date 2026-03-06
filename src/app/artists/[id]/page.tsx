@@ -49,7 +49,7 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
             unoptimized
           />
           <div className="space-y-3 min-w-0">
-            <h1 className="text-3xl font-bold text-gray-900">Artist: {artist.name} | Artli</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Artist: {artist.name}</h1>
             <p className="text-gray-600 leading-relaxed">{artist.bio}</p>
             <TagPills tags={artist.styleTags} />
             {artist.links.length > 0 && (

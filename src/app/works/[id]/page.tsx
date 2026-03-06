@@ -76,7 +76,7 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
         {/* Info */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Work: {artwork.title} | Artli</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Work: {artwork.title}</h1>
             <Link
               href={`/artists/${artwork.artistId}`}
               className="mt-1 inline-block text-indigo-600 hover:text-indigo-700 font-medium"
