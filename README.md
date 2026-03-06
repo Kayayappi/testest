@@ -1,5 +1,9 @@
 # Artli — 作家主体の条件付き正規取得プラットフォーム
 
+## デプロイ先
+
+本プロジェクトはVercelに静的デプロイされています: [https://testest-gilt.vercel.app](https://testest-gilt.vercel.app)
+
 Artli は作家が設定した許諾条件のもとで作品を正規取得できるプラットフォームのプロトタイプです。
 
 ## 起動方法
