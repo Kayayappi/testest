@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getFeaturedArtworks, getFeaturedArtists } from "@/lib/mock";
 import ArtworkCard from "@/components/ArtworkCard";
 import ArtistCard from "@/components/ArtistCard";
+import Sidebar from "@/components/Sidebar";
 import { BRAND } from "@/lib/brand";
 
 export default function HomePage() {
@@ -38,45 +39,49 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Works */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Featured Works</h2>
-          <Link
-            href="/works"
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
-          >
-            View all &rarr;
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredWorks.map((artwork) => (
-            <ArtworkCard key={artwork.id} artwork={artwork} />
-          ))}
-        </div>
-      </section>
+      {/* Main content with sidebar */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex gap-8">
+        <Sidebar className="hidden lg:block flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          {/* Featured Works */}
+          <section>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">Featured Works</h2>
+              <Link
+                href="/works"
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+              >
+                View all &rarr;
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
+              {featuredWorks.map((artwork) => (
+                <ArtworkCard key={artwork.id} artwork={artwork} />
+              ))}
+            </div>
+          </section>
 
-      {/* Featured Artists */}
-      <section className="bg-white border-y border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Featured Artists
-            </h2>
-            <Link
-              href="/artists"
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
-            >
-              View all &rarr;
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredArtists.map((artist) => (
-              <ArtistCard key={artist.id} artist={artist} />
-            ))}
-          </div>
+          {/* Featured Artists */}
+          <section className="mt-16">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Featured Artists
+              </h2>
+              <Link
+                href="/artists"
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+              >
+                View all &rarr;
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {featuredArtists.map((artist) => (
+                <ArtistCard key={artist.id} artist={artist} />
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
 
       {/* CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
