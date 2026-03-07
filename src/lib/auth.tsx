@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import type { User } from "./mockUsers";
-import { getUserByEmail } from "./mockUsers";
+import { getUserByEmail, mockUsers } from "./mockUsers";
 
 const STORAGE_KEY = "artli_user";
 
@@ -24,8 +24,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        const parsed = JSON.parse(stored) as User;
-        setUser(parsed);
+        const parsed = JSON.parse(stored) as { email: string };
+        // Re-hydrate from mockUsers to get the full User object without storing password
+        const fullUser = mockUsers.find((u) => u.email === parsed.email);
+        if (fullUser) {
+          setUser(fullUser);
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
+        }
       }
     } catch {
       localStorage.removeItem(STORAGE_KEY);
@@ -43,7 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: "パスワードが正しくありません。" };
     }
     setUser(found);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(found));
+    const { password: _, ...userWithoutPassword } = found;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(userWithoutPassword));
     return { success: true };
   }, []);
 
