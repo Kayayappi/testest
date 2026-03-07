@@ -12,6 +12,17 @@ npm run dev
 
 No environment variables or secrets are needed - all data is mocked in `src/lib/mock.ts`.
 
+## Vercel Deployment Testing
+- Live URL: https://testest-gilt.vercel.app
+- After merging changes, Vercel auto-deploys from `main`. Wait ~1 minute for deployment.
+- Key verification: check all routes load (especially dynamic routes like `/works/art-1/` and `/artists/artist-1/`) since these use `generateStaticParams` for SSG.
+- Note trailing slashes: the deployed site uses trailing slashes (e.g. `/works/` not `/works`).
+
+### Package Version Notes
+- The project uses Next.js 15 (not 16 - Next.js 16 does not exist as of early 2026). If `package.json` references `next@16.x`, it will fail to install.
+- Dynamic route pages use `params: Promise<{ id: string }>` with `await` - this is the Next.js 15 async params API. If downgrading to Next.js 14, these would need to be changed to synchronous params.
+- `eslint-config-next` version should match the Next.js major version.
+
 ## Key Routes to Test
 - `/` - Home page with SNS-style hero and Featured Works/Artists
 - `/works` - Works listing with sidebar (desktop), collapsible License filters, 5-column grid
@@ -48,14 +59,21 @@ No environment variables or secrets are needed - all data is mocked in `src/lib/
 - Drawer contains same sidebar content as desktop
 - Close via X button or clicking overlay
 
+## Build Verification
+```bash
+npm run build   # Should complete with no errors
+npm run lint    # Should show no warnings or errors
+```
+
 ## Common Pitfalls
 - **"use client" directive**: Any component using onClick, useState, or other client-side APIs must have `"use client"` at the top. If you see "Application error: a server-side exception" on page load, check for missing `"use client"` directives in components with event handlers.
 - Brand constants are in `src/lib/brand.ts` - the BRAND object should be used for site name/tagline across Header, Footer, layout metadata, and homepage.
 - ArtworkCard and AuthorBadge use `e.stopPropagation()` on nested Links to prevent parent link interference - these require client component status.
+- **Tailwind CSS v4**: This project uses Tailwind CSS v4 with `@import "tailwindcss"` in `globals.css` and `@tailwindcss/postcss` plugin in `postcss.config.mjs`. Do not use Tailwind v3 syntax.
 
 ## Known Issues
 - Nested `<a>` tags: ArtworkCard has multiple Link elements (thumbnail+title, AuthorBadge, License chip) which may trigger Next.js dev overlay warnings about nested anchors. This is a known prototype pattern.
 - Sidebar filter links (e.g. `/works?commercial=allowed`) navigate but don't actually apply filters since WorksFilter uses local useState.
 
 ## Devin Secrets Needed
-None - all data is mocked.
+- `VERCEL_TOKEN` - For Vercel deployment operations (optional, only needed for deploy commands)
