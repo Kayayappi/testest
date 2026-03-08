@@ -2,17 +2,16 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { getArtistById } from "@/lib/mock";
 
 interface AuthorBadgeProps {
-  artistId: string;
+  artistSlug: string;
   artistName: string;
+  artistIconUrl?: string;
   size?: "sm" | "md";
 }
 
-export default function AuthorBadge({ artistId, artistName, size = "sm" }: AuthorBadgeProps) {
-  const artist = getArtistById(artistId);
-  const iconUrl = artist?.iconUrl ?? "";
+export default function AuthorBadge({ artistSlug, artistName, artistIconUrl, size = "sm" }: AuthorBadgeProps) {
+  const iconUrl = artistIconUrl ?? "";
   const iconSize = size === "sm" ? 24 : 32;
 
   return (
@@ -28,7 +27,7 @@ export default function AuthorBadge({ artistId, artistName, size = "sm" }: Autho
         />
       )}
       <Link
-        href={`/artists/${artistId}`}
+        href={`/artists/${artistSlug}`}
         className="text-xs text-gray-600 hover:text-indigo-600 transition-colors truncate"
         onClick={(e) => e.stopPropagation()}
       >

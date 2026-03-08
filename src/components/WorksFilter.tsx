@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Artwork } from "@/lib/mock";
+import type { WorkForCard } from "@/lib/types";
 import ArtworkCard from "@/components/ArtworkCard";
 
 const commercialOptions = ["All", "Allowed", "Denied", "Consult"] as const;
@@ -10,7 +10,7 @@ const trainingOptions = ["All", "Light", "Standard", "Strong"] as const;
 const sortOptions = ["New", "Popular"] as const;
 
 interface WorksFilterProps {
-  artworks: Artwork[];
+  artworks: WorkForCard[];
 }
 
 export default function WorksFilter({ artworks }: WorksFilterProps) {
@@ -22,15 +22,15 @@ export default function WorksFilter({ artworks }: WorksFilterProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filtered = artworks.filter((artwork) => {
-    if (commercial !== "All" && artwork.licenseTerms.commercial !== commercial.toLowerCase()) return false;
-    if (adult !== "All" && artwork.licenseTerms.adult !== adult.toLowerCase()) return false;
-    if (training !== "All" && artwork.licenseTerms.trainingType !== training.toLowerCase()) return false;
+    if (commercial !== "All" && artwork.license?.commercial !== commercial.toLowerCase()) return false;
+    if (adult !== "All" && artwork.license?.adult !== adult.toLowerCase()) return false;
+    if (training !== "All" && artwork.license?.trainingType !== training.toLowerCase()) return false;
     if (search) {
       const q = search.toLowerCase();
       if (
         !artwork.title.toLowerCase().includes(q) &&
-        !artwork.artistName.toLowerCase().includes(q) &&
-        !artwork.tags.some((t) => t.toLowerCase().includes(q))
+        !artwork.artistProfile.displayName.toLowerCase().includes(q) &&
+        !artwork.tags.some((t) => t.name.toLowerCase().includes(q))
       ) {
         return false;
       }

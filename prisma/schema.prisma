@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  email       String   @unique
+  password    String
+  displayName String
+  avatarUrl   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  artistProfile    ArtistProfile?
+  developerProfile DeveloperProfile?
+}
+
+model ArtistProfile {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  displayName   String
+  bio           String
+  iconUrl       String
+  links         String   @default("[]")
+  styleTags     String   @default("[]")
+  policySummary String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  works Work[]
+}
+
+model DeveloperProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  displayName String
+  companyName String
+  purpose     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  acquisitions Acquisition[]
+}
+
+model Work {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  description   String
+  coverImageUrl String
+  status        String   @default("public")
+  likesCount    Int      @default(0)
+  commentsCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  artistProfileId String
+  artistProfile   ArtistProfile @relation(fields: [artistProfileId], references: [id])
+
+  license      License?
+  acquisitions Acquisition[]
+  tags         Tag[]
+}
+
+model License {
+  id             String   @id @default(cuid())
+  workId         String   @unique
+  work           Work     @relation(fields: [workId], references: [id])
+  commercial     String
+  adult          String
+  trainingType   String
+  redistribution String
+  priceJpy       Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Acquisition {
+  id                 String   @id @default(cuid())
+  developerProfileId String
+  developerProfile   DeveloperProfile @relation(fields: [developerProfileId], references: [id])
+  workId             String
+  work               Work     @relation(fields: [workId], references: [id])
+  priceJpy           Int
+  licenseSnapshot    String
+  acquiredAt         DateTime
+  createdAt          DateTime @default(now())
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String @unique
+  works Work[]
+}

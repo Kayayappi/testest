@@ -1,4 +1,4 @@
-import { LicenseValue, TrainingType } from "@/lib/mock";
+import type { LicenseValue, TrainingType } from "@/lib/types";
 
 export function licenseValueText(value: LicenseValue): string {
   switch (value) {

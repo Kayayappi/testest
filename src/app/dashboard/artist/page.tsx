@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth";
-import { getDashboardWorks, getArtistProfile } from "@/lib/mockUsers";
 
 const statusStyles: Record<string, string> = {
   public: "bg-green-100 text-green-700",
@@ -19,9 +18,36 @@ const statusLabels: Record<string, string> = {
   draft: "Draft",
 };
 
+interface DashboardWork {
+  id: string;
+  slug: string;
+  title: string;
+  imageUrl: string;
+  status: string;
+  likes: number;
+  acquisitions: number;
+  createdAt: string;
+  licenseTerms: {
+    commercial: string;
+    adult: string;
+    trainingType: string;
+    redistribution: string;
+  } | null;
+}
+
+interface ArtistDashboardProfile {
+  displayName: string;
+  bio: string;
+  styleTags: string[];
+  policySummary: string;
+}
+
 export default function ArtistDashboardPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
+  const [works, setWorks] = useState<DashboardWork[]>([]);
+  const [profile, setProfile] = useState<ArtistDashboardProfile | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -29,7 +55,26 @@ export default function ArtistDashboardPage() {
     }
   }, [isLoading, user, router]);
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!user || !user.isArtist) return;
+    setDataLoading(true);
+    fetch(`/api/dashboard/artist?userSlug=${encodeURIComponent(user.id)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
+      .then((data: { works: DashboardWork[]; profile: ArtistDashboardProfile | null }) => {
+        setWorks(data.works ?? []);
+        setProfile(data.profile ?? null);
+      })
+      .catch(() => {
+        setWorks([]);
+        setProfile(null);
+      })
+      .finally(() => setDataLoading(false));
+  }, [user]);
+
+  if (isLoading || (user?.isArtist && dataLoading)) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <div className="animate-pulse text-gray-400">Loading...</div>
@@ -75,9 +120,6 @@ export default function ArtistDashboardPage() {
   }
 
   // Full dashboard
-  const works = getDashboardWorks(user.id);
-  const profile = getArtistProfile(user.id);
-
   const publicWorks = works.filter((w) => w.status === "public");
   const draftPrivateWorks = works.filter((w) => w.status === "draft" || w.status === "private");
   const totalLikes = works.reduce((sum, w) => sum + w.likes, 0);

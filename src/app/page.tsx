@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { getFeaturedArtworks, getFeaturedArtists } from "@/lib/mock";
+import { getFeaturedWorks, getFeaturedArtists } from "@/lib/queries";
 import ArtworkCard from "@/components/ArtworkCard";
 import ArtistCard from "@/components/ArtistCard";
 import Sidebar from "@/components/Sidebar";
 import { BRAND } from "@/lib/brand";
 
-export default function HomePage() {
-  const featuredWorks = getFeaturedArtworks(6);
-  const featuredArtists = getFeaturedArtists(4);
+export default async function HomePage() {
+  const featuredWorks = await getFeaturedWorks(6);
+  const featuredArtists = await getFeaturedArtists(4);
 
   return (
     <div>

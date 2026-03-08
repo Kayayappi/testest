@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Artist } from "@/lib/mock";
+import type { ArtistForCard } from "@/lib/types";
 import ArtistCard from "@/components/ArtistCard";
 
 interface ArtistsFilterProps {
-  artists: Artist[];
+  artists: ArtistForCard[];
   allStyleTags: string[];
 }
 
@@ -18,7 +18,7 @@ export default function ArtistsFilter({ artists, allStyleTags }: ArtistsFilterPr
     if (search) {
       const q = search.toLowerCase();
       if (
-        !artist.name.toLowerCase().includes(q) &&
+        !artist.displayName.toLowerCase().includes(q) &&
         !artist.bio.toLowerCase().includes(q) &&
         !artist.styleTags.some((t) => t.toLowerCase().includes(q))
       ) {

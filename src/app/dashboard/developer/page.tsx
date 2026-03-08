@@ -1,15 +1,35 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/lib/auth";
-import { getAcquisitions, getDeveloperProfile } from "@/lib/mockUsers";
+
+interface AcquisitionItem {
+  id: string;
+  workId: string;
+  workTitle: string;
+  workImageUrl: string;
+  artistName: string;
+  artistId: string;
+  acquiredAt: string;
+  licenseSummary: string;
+  commercialAllowed: boolean;
+  priceJpy: number;
+}
+
+interface DeveloperDashboardProfile {
+  companyName: string;
+  purpose: string;
+}
 
 export default function DeveloperDashboardPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
+  const [acqs, setAcqs] = useState<AcquisitionItem[]>([]);
+  const [profile, setProfile] = useState<DeveloperDashboardProfile | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -17,7 +37,26 @@ export default function DeveloperDashboardPage() {
     }
   }, [isLoading, user, router]);
 
-  if (isLoading) {
+  useEffect(() => {
+    if (!user || !user.isDeveloper) return;
+    setDataLoading(true);
+    fetch(`/api/dashboard/developer?userSlug=${encodeURIComponent(user.id)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
+      .then((data: { acquisitions: AcquisitionItem[]; profile: DeveloperDashboardProfile | null }) => {
+        setAcqs(data.acquisitions ?? []);
+        setProfile(data.profile ?? null);
+      })
+      .catch(() => {
+        setAcqs([]);
+        setProfile(null);
+      })
+      .finally(() => setDataLoading(false));
+  }, [user]);
+
+  if (isLoading || (user?.isDeveloper && dataLoading)) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <div className="animate-pulse text-gray-400">Loading...</div>
@@ -63,9 +102,6 @@ export default function DeveloperDashboardPage() {
   }
 
   // Full dashboard
-  const acqs = getAcquisitions(user.id);
-  const profile = getDeveloperProfile(user.id);
-
   const commercialAllowed = acqs.filter((a) => a.commercialAllowed).length;
   const consultRequired = acqs.filter((a) => !a.commercialAllowed).length;
   const recentAcqs = [...acqs].sort((a, b) => b.acquiredAt.localeCompare(a.acquiredAt)).slice(0, 3);

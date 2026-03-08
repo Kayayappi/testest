@@ -2,21 +2,21 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Artwork } from "@/lib/mock";
+import type { WorkForCard } from "@/lib/types";
 import AuthorBadge from "./AuthorBadge";
 
 interface ArtworkCardProps {
-  artwork: Artwork;
+  artwork: WorkForCard;
 }
 
 export default function ArtworkCard({ artwork }: ArtworkCardProps) {
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
       {/* Thumbnail + Title link */}
-      <Link href={`/works/${artwork.id}`} className="group block">
+      <Link href={`/works/${artwork.slug}`} className="group block">
         <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
           <Image
-            src={artwork.imageUrl}
+            src={artwork.coverImageUrl}
             alt={artwork.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -34,22 +34,23 @@ export default function ArtworkCard({ artwork }: ArtworkCardProps) {
       <div className="px-3 pb-3 pt-1.5 space-y-1.5">
         {/* Author Badge */}
         <AuthorBadge
-          artistId={artwork.artistId}
-          artistName={artwork.artistName}
+          artistSlug={artwork.artistProfile.slug}
+          artistName={artwork.artistProfile.displayName}
+          artistIconUrl={artwork.artistProfile.iconUrl}
           size="sm"
         />
 
         {/* License chip + Like count */}
         <div className="flex items-center justify-between">
           <Link
-            href={`/works/${artwork.id}#license`}
+            href={`/works/${artwork.slug}#license`}
             className="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 rounded-full hover:bg-gray-200 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             License
           </Link>
           <span className="text-xs text-gray-400 flex items-center gap-1">
-            {"\u2661"} {artwork.likes}
+            {"\u2661"} {artwork.likesCount}
           </span>
         </div>
       </div>

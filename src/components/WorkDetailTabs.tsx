@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Artwork } from "@/lib/mock";
+import type { WorkForCard } from "@/lib/types";
 import { licenseValueText, trainingTypeText } from "@/lib/license";
 import AuthorBadge from "./AuthorBadge";
 import LicenseBadges from "./LicenseBadges";
@@ -9,7 +9,7 @@ import TagPills from "./TagPills";
 import WorkActions from "./WorkActions";
 
 interface WorkDetailTabsProps {
-  artwork: Artwork;
+  artwork: WorkForCard;
 }
 
 export default function WorkDetailTabs({ artwork }: WorkDetailTabsProps) {
@@ -20,7 +20,7 @@ export default function WorkDetailTabs({ artwork }: WorkDetailTabsProps) {
     return "overview";
   });
 
-  const priceJpy = artwork.priceJpy;
+  const license = artwork.license;
 
   return (
     <div>
@@ -52,16 +52,17 @@ export default function WorkDetailTabs({ artwork }: WorkDetailTabsProps) {
       {activeTab === "overview" && (
         <div className="space-y-5">
           <AuthorBadge
-            artistId={artwork.artistId}
-            artistName={artwork.artistName}
+            artistSlug={artwork.artistProfile.slug}
+            artistName={artwork.artistProfile.displayName}
+            artistIconUrl={artwork.artistProfile.iconUrl}
             size="md"
           />
 
           <p className="text-gray-600 leading-relaxed">{artwork.description}</p>
 
-          <TagPills tags={artwork.tags} />
+          <TagPills tags={artwork.tags.map((t) => t.name)} />
 
-          <WorkActions likes={artwork.likes} comments={artwork.comments} />
+          <WorkActions likes={artwork.likesCount} comments={artwork.commentsCount} />
 
           <button
             onClick={() => setActiveTab("license")}
@@ -73,35 +74,35 @@ export default function WorkDetailTabs({ artwork }: WorkDetailTabsProps) {
       )}
 
       {/* License Tab */}
-      {activeTab === "license" && (
+      {activeTab === "license" && license && (
         <div className="space-y-5">
-          <LicenseBadges terms={artwork.licenseTerms} />
+          <LicenseBadges terms={license} />
 
           <div className="bg-gray-50 rounded-xl p-5 space-y-4 border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-900">許諾条件</h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <span className="text-gray-500">商用利用:</span>{" "}
-                <span className="font-medium">{licenseValueText(artwork.licenseTerms.commercial)}</span>
+                <span className="font-medium">{licenseValueText(license.commercial)}</span>
               </div>
               <div>
                 <span className="text-gray-500">成人向け:</span>{" "}
-                <span className="font-medium">{licenseValueText(artwork.licenseTerms.adult)}</span>
+                <span className="font-medium">{licenseValueText(license.adult)}</span>
               </div>
               <div>
                 <span className="text-gray-500">学習タイプ:</span>{" "}
-                <span className="font-medium">{trainingTypeText(artwork.licenseTerms.trainingType)}</span>
+                <span className="font-medium">{trainingTypeText(license.trainingType)}</span>
               </div>
               <div>
                 <span className="text-gray-500">再配布:</span>{" "}
-                <span className="font-medium">{licenseValueText(artwork.licenseTerms.redistribution)}</span>
+                <span className="font-medium">{licenseValueText(license.redistribution)}</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <p className="text-3xl font-bold text-gray-900">
-              &yen;{priceJpy.toLocaleString()}
+              &yen;{license.priceJpy.toLocaleString()}
             </p>
             <button
               className="px-6 py-3 rounded-lg bg-indigo-600 text-white font-semibold opacity-50 cursor-not-allowed"
