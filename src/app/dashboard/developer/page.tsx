@@ -41,10 +41,17 @@ export default function DeveloperDashboardPage() {
     if (!user || !user.isDeveloper) return;
     setDataLoading(true);
     fetch(`/api/dashboard/developer?userSlug=${encodeURIComponent(user.id)}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
       .then((data: { acquisitions: AcquisitionItem[]; profile: DeveloperDashboardProfile | null }) => {
-        setAcqs(data.acquisitions);
-        setProfile(data.profile);
+        setAcqs(data.acquisitions ?? []);
+        setProfile(data.profile ?? null);
+      })
+      .catch(() => {
+        setAcqs([]);
+        setProfile(null);
       })
       .finally(() => setDataLoading(false));
   }, [user]);

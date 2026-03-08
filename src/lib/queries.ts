@@ -99,8 +99,8 @@ export async function getFeaturedWorks(count: number): Promise<WorkForCard[]> {
 }
 
 export async function getWorkBySlug(slug: string): Promise<WorkForCard | null> {
-  const w = await prisma.work.findUnique({
-    where: { slug },
+  const w = await prisma.work.findFirst({
+    where: { slug, status: "public" },
     include: workInclude,
   });
   if (!w) return null;

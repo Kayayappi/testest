@@ -59,10 +59,17 @@ export default function ArtistDashboardPage() {
     if (!user || !user.isArtist) return;
     setDataLoading(true);
     fetch(`/api/dashboard/artist?userSlug=${encodeURIComponent(user.id)}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
       .then((data: { works: DashboardWork[]; profile: ArtistDashboardProfile | null }) => {
-        setWorks(data.works);
-        setProfile(data.profile);
+        setWorks(data.works ?? []);
+        setProfile(data.profile ?? null);
+      })
+      .catch(() => {
+        setWorks([]);
+        setProfile(null);
       })
       .finally(() => setDataLoading(false));
   }, [user]);
