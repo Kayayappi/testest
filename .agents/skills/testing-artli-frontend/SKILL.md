@@ -1,26 +1,37 @@
 # Testing Artli Frontend
 
 ## Overview
-Artli is a Next.js (App Router) application with Tailwind CSS, styled as a pixiv-like art SNS/browsing platform. It uses mock data (no DB/auth required) so testing is straightforward.
+Artli is a Next.js (App Router) application with Tailwind CSS, styled as a pixiv-like art SNS/browsing platform. It uses Neon PostgreSQL via Prisma 7 with the PrismaNeon adapter for data storage.
 
 ## Dev Server Setup
 ```bash
 cd /home/ubuntu/repos/testest
+npm install
+npx prisma generate
 npm run dev
-# Runs on http://localhost:3000
+# Runs on http://localhost:3000 (or next available port like 3001)
 ```
 
-No environment variables or secrets are needed - all data is mocked in `src/lib/mock.ts`.
+Requires `.env` file with `DATABASE_URL` and `DIRECT_DATABASE_URL` pointing to the Neon database.
+
+## Database Setup
+- **Prisma 7** with `prisma-client` generator (output: `src/generated/prisma/`)
+- **PrismaNeon adapter** (`@prisma/adapter-neon`) for serverless connections
+- `prisma.config.ts` handles datasource URL config — uses `process.env["DIRECT_DATABASE_URL"]` with `??` fallback to `env("DATABASE_URL")` (note: Prisma's `env()` throws on missing vars, so `process.env` is needed for the optional fallback)
+- Migration: `npx prisma migrate dev` (uses DIRECT_DATABASE_URL for direct connection)
+- Seed: `npx prisma db seed` or `npx tsx prisma/seed.ts`
+- Seed data: 8 users, 6 artists, 2 developer profiles, 21 works, tags, acquisitions
 
 ## Vercel Deployment Testing
 - Live URL: https://testest-gilt.vercel.app
 - After merging changes, Vercel auto-deploys from `main`. Wait ~1 minute for deployment.
-- Key verification: check all routes load (especially dynamic routes like `/works/art-1/` and `/artists/artist-1/`) since these use `generateStaticParams` for SSG.
-- Note trailing slashes: the deployed site uses trailing slashes (e.g. `/works/` not `/works`).
+- Key verification: check all routes load (especially dynamic routes like `/works/art-1` and `/artists/artist-1`).
+- Vercel requires both `DATABASE_URL` and `DIRECT_DATABASE_URL` environment variables set in project settings.
+- Build command must include `prisma generate` before `next build` (configured in package.json build script).
 
 ### Package Version Notes
 - The project uses Next.js 15 (not 16 - Next.js 16 does not exist as of early 2026). If `package.json` references `next@16.x`, it will fail to install.
-- Dynamic route pages use `params: Promise<{ id: string }>` with `await` - this is the Next.js 15 async params API. If downgrading to Next.js 14, these would need to be changed to synchronous params.
+- Dynamic route pages use `params: Promise<{ id: string }>` with `await` - this is the Next.js 15 async params API.
 - `eslint-config-next` version should match the Next.js major version.
 
 ## Key Routes to Test
@@ -29,7 +40,7 @@ No environment variables or secrets are needed - all data is mocked in `src/lib/
 - `/artists` - Artists listing with sidebar
 - `/works/{id}` - Work detail with Overview/License tabs (e.g. `/works/art-1`)
 - `/works/{id}#license` - Direct link to License tab via URL hash
-- `/artists/{id}` - Artist detail page with Policy Summary
+- `/artists/{id}` - Artist detail page with Policy Summary and works list
 
 ## Testing Patterns
 
@@ -52,6 +63,7 @@ No environment variables or secrets are needed - all data is mocked in `src/lib/
 ### Artist Detail Page
 - Policy Summary section uses gray styling (bg-gray-50, border-gray-200, text-xs, text-gray-700/600)
 - Policy Summary should NOT use indigo styling
+- Works section lists all works by the artist with like counts
 
 ### Mobile View (375px or set_mobile)
 - Sidebar hidden, "Explore" button visible
@@ -61,8 +73,9 @@ No environment variables or secrets are needed - all data is mocked in `src/lib/
 
 ## Build Verification
 ```bash
-npm run build   # Should complete with no errors
-npm run lint    # Should show no warnings or errors
+npx prisma generate  # Must run before build
+npm run build        # Should complete with no errors
+npm run lint         # Should show no warnings or errors
 ```
 
 ## Common Pitfalls
@@ -70,10 +83,16 @@ npm run lint    # Should show no warnings or errors
 - Brand constants are in `src/lib/brand.ts` - the BRAND object should be used for site name/tagline across Header, Footer, layout metadata, and homepage.
 - ArtworkCard and AuthorBadge use `e.stopPropagation()` on nested Links to prevent parent link interference - these require client component status.
 - **Tailwind CSS v4**: This project uses Tailwind CSS v4 with `@import "tailwindcss"` in `globals.css` and `@tailwindcss/postcss` plugin in `postcss.config.mjs`. Do not use Tailwind v3 syntax.
+- **Prisma 7 breaking changes**: `datasourceUrl` constructor option no longer exists — must use `PrismaNeon` adapter. The `env()` helper from `prisma/config` throws on missing variables (unlike `process.env` which returns `undefined`), so use `process.env` for optional env var fallbacks.
+- **Generated client path**: Import from `@/generated/prisma/client` (app code) or `../src/generated/prisma/client.js` (scripts like seed.ts with `.js` extension for ESM).
+- **Port conflicts**: Dev server may use port 3001 if 3000 is in use. Check console output for actual port.
 
 ## Known Issues
 - Nested `<a>` tags: ArtworkCard has multiple Link elements (thumbnail+title, AuthorBadge, License chip) which may trigger Next.js dev overlay warnings about nested anchors. This is a known prototype pattern.
 - Sidebar filter links (e.g. `/works?commercial=allowed`) navigate but don't actually apply filters since WorksFilter uses local useState.
+- Occasional `SyntaxError: Unexpected end of JSON input` on `/works` page during dev — transient, page works on reload.
 
 ## Devin Secrets Needed
+- `DATABASE_URL` - Neon PostgreSQL connection string (pooled, with `-pooler` suffix)
+- `DIRECT_DATABASE_URL` - Neon PostgreSQL direct connection string (non-pooled, for migrations)
 - `VERCEL_TOKEN` - For Vercel deployment operations (optional, only needed for deploy commands)

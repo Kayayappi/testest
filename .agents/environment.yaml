@@ -1,8 +1,12 @@
 # Artli Frontend Environment
-# Next.js app with Tailwind CSS, no backend/DB needed
+# Next.js app with Prisma 7 + Neon PostgreSQL
 
 maintenance:
   - command: "cd /home/ubuntu/repos/testest && npm install"
     triggers:
       - "package.json"
       - "package-lock.json"
+  - command: "cd /home/ubuntu/repos/testest && npx prisma generate"
+    triggers:
+      - "prisma/schema.prisma"
+      - "prisma.config.ts"
