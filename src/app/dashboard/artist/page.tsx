@@ -3,20 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useAuth } from "@/lib/auth";
-
-const statusStyles: Record<string, string> = {
-  public: "bg-green-100 text-green-700",
-  private: "bg-gray-100 text-gray-600",
-  draft: "bg-yellow-100 text-yellow-700",
-};
-
-const statusLabels: Record<string, string> = {
-  public: "Public",
-  private: "Private",
-  draft: "Draft",
-};
 
 interface DashboardWork {
   id: string;
@@ -119,11 +106,11 @@ export default function ArtistDashboardPage() {
     );
   }
 
-  // Full dashboard
-  const publicWorks = works.filter((w) => w.status === "public");
-  const draftPrivateWorks = works.filter((w) => w.status === "draft" || w.status === "private");
-  const totalLikes = works.reduce((sum, w) => sum + w.likes, 0);
-  const totalAcquisitions = works.reduce((sum, w) => sum + w.acquisitions, 0);
+  // Full dashboard — summary hub
+  const totalWorks = works.length;
+  const publicWorks = works.filter((w) => w.status === "public").length;
+  const privateWorks = works.filter((w) => w.status === "private").length;
+  const draftWorks = works.filter((w) => w.status === "draft").length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -135,71 +122,36 @@ export default function ArtistDashboardPage() {
             Welcome back, {profile?.displayName ?? user.displayName}
           </p>
         </div>
-        <button
-          onClick={() => alert("この機能はプロトタイプでは利用できません。")}
+        <Link
+          href="/dashboard/artist/works/new"
           className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
           New Work
-        </button>
+        </Link>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <SummaryCard label="Public Works" value={publicWorks.length} color="green" />
-        <SummaryCard label="Drafts / Private" value={draftPrivateWorks.length} color="yellow" />
-        <SummaryCard label="Total Likes" value={totalLikes} color="pink" />
-        <SummaryCard label="Acquisitions" value={totalAcquisitions} color="indigo" />
+        <SummaryCard label="Total Works" value={totalWorks} color="indigo" />
+        <SummaryCard label="Public" value={publicWorks} color="green" />
+        <SummaryCard label="Private" value={privateWorks} color="yellow" />
+        <SummaryCard label="Draft" value={draftWorks} color="pink" />
       </div>
 
-      {/* Works list */}
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Works</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {works.map((work) => (
-          <div key={work.id} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-            <div className="relative aspect-[4/3]">
-              <Image
-                src={work.imageUrl}
-                alt={work.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              />
-              <span className={`absolute top-3 right-3 text-xs font-medium px-2.5 py-1 rounded-full ${statusStyles[work.status]}`}>
-                {statusLabels[work.status]}
-              </span>
-            </div>
-            <div className="p-4">
-              <h3 className="font-semibold text-gray-900 mb-1">{work.title}</h3>
-              <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
-                <span className="flex items-center gap-1">
-                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                  </svg>
-                  {work.likes}
-                </span>
-                <span>{work.acquisitions} acquisitions</span>
-                <span>{work.createdAt}</span>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => alert("License settings — プロトタイプでは利用不可")}
-                  className="flex-1 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg py-1.5 hover:bg-indigo-50 transition-colors"
-                >
-                  License Settings
-                </button>
-                <button
-                  onClick={() => alert("Edit work — プロトタイプでは利用不可")}
-                  className="flex-1 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg py-1.5 hover:bg-gray-50 transition-colors"
-                >
-                  Edit
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Manage works button */}
+      <div className="flex justify-center">
+        <Link
+          href="/dashboard/artist/works"
+          className="px-6 py-3 bg-white text-indigo-600 text-sm font-medium rounded-lg border border-indigo-200 hover:bg-indigo-50 transition-colors flex items-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+          作品を管理
+        </Link>
       </div>
     </div>
   );

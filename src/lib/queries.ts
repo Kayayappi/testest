@@ -8,6 +8,25 @@ import type {
   SidebarData,
 } from "@/lib/types";
 
+// ─── Slug Generation ─────────────────────────────────────────────────────────
+
+async function generateSlug(title: string): Promise<string> {
+  const base = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 40) || "work";
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const suffix = Math.random().toString(36).slice(2, 8 + attempt);
+    const slug = `${base}-${suffix}`;
+    const existing = await prisma.work.findUnique({ where: { slug } });
+    if (!existing) return slug;
+  }
+  throw new Error("Failed to generate unique slug after multiple attempts");
+}
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function toWorkForCard(
@@ -215,6 +234,7 @@ export async function getDashboardWorksByUserSlug(userSlug: string) {
     likes: w.likesCount,
     acquisitions: w._count.acquisitions,
     createdAt: w.createdAt.toISOString().slice(0, 10),
+    updatedAt: w.updatedAt.toISOString().slice(0, 10),
     licenseTerms: w.license
       ? {
           commercial: w.license.commercial,
@@ -224,6 +244,167 @@ export async function getDashboardWorksByUserSlug(userSlug: string) {
         }
       : null,
   }));
+}
+
+// ─── Work CRUD ───────────────────────────────────────────────────────────────
+
+export async function createWork(data: {
+  userSlug: string;
+  title: string;
+  description: string;
+  coverImageUrl: string;
+  tags: string[];
+  license: {
+    commercial: string;
+    adult: string;
+    trainingType: string;
+    redistribution: string;
+    priceJpy: number;
+  };
+}): Promise<{ id: string; slug: string }> {
+  const user = await prisma.user.findUnique({
+    where: { slug: data.userSlug },
+    include: { artistProfile: true },
+  });
+  if (!user?.artistProfile) throw new Error("Artist profile not found");
+
+  const slug = await generateSlug(data.title);
+
+  const work = await prisma.work.create({
+    data: {
+      slug,
+      title: data.title,
+      description: data.description,
+      coverImageUrl: data.coverImageUrl,
+      status: "draft",
+      artistProfileId: user.artistProfile.id,
+      license: {
+        create: {
+          commercial: data.license.commercial,
+          adult: data.license.adult,
+          trainingType: data.license.trainingType,
+          redistribution: data.license.redistribution,
+          priceJpy: data.license.priceJpy,
+        },
+      },
+      tags: {
+        connectOrCreate: data.tags
+          .filter((t) => t.trim() !== "")
+          .map((name) => ({
+            where: { name: name.trim() },
+            create: { name: name.trim() },
+          })),
+      },
+    },
+  });
+
+  return { id: work.id, slug: work.slug };
+}
+
+export async function updateWork(data: {
+  workId: string;
+  userSlug: string;
+  title: string;
+  description: string;
+  coverImageUrl: string;
+  tags: string[];
+  status: string;
+  license: {
+    commercial: string;
+    adult: string;
+    trainingType: string;
+    redistribution: string;
+    priceJpy: number;
+  };
+}): Promise<{ id: string; slug: string }> {
+  const user = await prisma.user.findUnique({
+    where: { slug: data.userSlug },
+    include: { artistProfile: true },
+  });
+  if (!user?.artistProfile) throw new Error("Artist profile not found");
+
+  const work = await prisma.work.findUnique({
+    where: { id: data.workId },
+  });
+  if (!work || work.artistProfileId !== user.artistProfile.id) {
+    throw new Error("Work not found or not owned by this artist");
+  }
+
+  const updated = await prisma.work.update({
+    where: { id: data.workId },
+    data: {
+      title: data.title,
+      description: data.description,
+      coverImageUrl: data.coverImageUrl,
+      status: data.status,
+      tags: {
+        set: [],
+        connectOrCreate: data.tags
+          .filter((t) => t.trim() !== "")
+          .map((name) => ({
+            where: { name: name.trim() },
+            create: { name: name.trim() },
+          })),
+      },
+      license: {
+        upsert: {
+          create: {
+            commercial: data.license.commercial,
+            adult: data.license.adult,
+            trainingType: data.license.trainingType,
+            redistribution: data.license.redistribution,
+            priceJpy: data.license.priceJpy,
+          },
+          update: {
+            commercial: data.license.commercial,
+            adult: data.license.adult,
+            trainingType: data.license.trainingType,
+            redistribution: data.license.redistribution,
+            priceJpy: data.license.priceJpy,
+          },
+        },
+      },
+    },
+  });
+
+  return { id: updated.id, slug: updated.slug };
+}
+
+export async function getWorkForEdit(workId: string, userSlug: string) {
+  const user = await prisma.user.findUnique({
+    where: { slug: userSlug },
+    include: { artistProfile: true },
+  });
+  if (!user?.artistProfile) return null;
+
+  const work = await prisma.work.findUnique({
+    where: { id: workId },
+    include: {
+      license: true,
+      tags: { select: { name: true } },
+    },
+  });
+
+  if (!work || work.artistProfileId !== user.artistProfile.id) return null;
+
+  return {
+    id: work.id,
+    slug: work.slug,
+    title: work.title,
+    description: work.description,
+    coverImageUrl: work.coverImageUrl,
+    status: work.status,
+    tags: work.tags.map((t) => t.name),
+    license: work.license
+      ? {
+          commercial: work.license.commercial,
+          adult: work.license.adult,
+          trainingType: work.license.trainingType,
+          redistribution: work.license.redistribution,
+          priceJpy: work.license.priceJpy,
+        }
+      : null,
+  };
 }
 
 export async function getArtistProfileByUserSlug(userSlug: string) {
