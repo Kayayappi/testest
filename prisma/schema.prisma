@@ -60,7 +60,7 @@ model Work {
   title         String
   description   String
   coverImageUrl String
-  status        String   @default("public")
+  status        String   @default("draft")
   likesCount    Int      @default(0)
   commentsCount Int      @default(0)
   createdAt     DateTime @default(now())
