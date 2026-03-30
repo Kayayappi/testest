@@ -12,7 +12,7 @@ npm run dev
 # Runs on http://localhost:3000 (or next available port like 3001)
 ```
 
-Requires `.env` file with `DATABASE_URL` and `DIRECT_DATABASE_URL` pointing to the Neon database.
+Requires `.env` or `.env.local` file with `DATABASE_URL` and `DIRECT_DATABASE_URL` pointing to the Neon database.
 
 ## Database Setup
 - **Prisma 7** with `prisma-client` generator (output: `src/generated/prisma/`)
@@ -35,14 +35,65 @@ Requires `.env` file with `DATABASE_URL` and `DIRECT_DATABASE_URL` pointing to t
 - `eslint-config-next` version should match the Next.js major version.
 
 ## Key Routes to Test
+
+### Public Pages
 - `/` - Home page with SNS-style hero and Featured Works/Artists
 - `/works` - Works listing with sidebar (desktop), collapsible License filters, 5-column grid
 - `/artists` - Artists listing with sidebar
-- `/works/{id}` - Work detail with Overview/License tabs (e.g. `/works/art-1`)
-- `/works/{id}#license` - Direct link to License tab via URL hash
+- `/works/{slug}` - Work detail with Overview/License tabs (e.g. `/works/art-1`)
+- `/works/{slug}#license` - Direct link to License tab via URL hash
 - `/artists/{id}` - Artist detail page with Policy Summary and works list
 
+### Dashboard Pages (requires login)
+- `/dashboard/artist` - Artist Dashboard summary hub with 4 count cards (Total/Public/Private/Draft)
+- `/dashboard/artist/works` - Works Management table (Title/Status/Updated/Actions)
+- `/dashboard/artist/works/new` - Create new work form (saves as draft)
+- `/dashboard/artist/works/[id]/edit` - Edit work form (can change status to public/private/draft)
+
+### Auth Guards
+- Not logged in → redirects to `/login`
+- Logged in but not artist → shows empty state on `/dashboard/artist`, redirects from works sub-pages
+- Auth is mock-based using localStorage key `artli_user`
+
+## Test Accounts
+- `artist@artli.dev` / `password` (user-2, isArtist: true) - Yuki Tanaka
+- `hybrid@artli.dev` / `password` (user-4, isArtist: true, isDeveloper: true) - Sakura Ito
+- `viewer@artli.dev` / `password` (user-1, non-artist) - Demo Viewer
+- `dev@artli.dev` / `password` (user-3, isDeveloper: true) - Dev Studio
+
 ## Testing Patterns
+
+### Login Flow
+- Navigate to `/login`
+- Click a demo account button (e.g. "Yuki Tanaka") to auto-fill credentials
+- Click "Log In" button
+- Header shows avatar initial (e.g. "Y") when logged in
+
+### Dashboard Testing
+- After login, navigate to `/dashboard/artist`
+- Summary cards show counts computed from API response
+- "New Work" link → `/dashboard/artist/works/new`
+- "作品を管理" link → `/dashboard/artist/works`
+
+### Form Interaction (WorkForm)
+- React controlled inputs may not respond to direct `type` actions from browser automation
+- **Recommended approach**: Use JavaScript console to set values via native input setter pattern:
+  ```javascript
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+  setter.call(element, 'value');
+  element.dispatchEvent(new Event('input', { bubbles: true }));
+  element.dispatchEvent(new Event('change', { bubbles: true }));
+  ```
+- For textarea, use `HTMLTextAreaElement.prototype` instead
+- For select dropdowns, use `select_option` with the devinid and index
+- Form IDs: `title`, `description`, `coverImageUrl`, `tags`, `status`, `commercial`, `adult`, `trainingType`, `redistribution`, `priceJpy`
+- Submit with: `document.querySelector('form').requestSubmit()`
+- Button shows "Saving..." during submission, then redirects to `/dashboard/artist/works`
+
+### Link Click Issues
+- Some Next.js Link components may block direct `click` actions from browser automation
+- Workaround: Use `navigate` to go directly to the target URL instead of clicking the link
+- Or use JavaScript: `document.querySelector('a[href*="target"]').click()`
 
 ### Desktop View
 - Sidebar should be visible on `/works` and `/artists` pages (left side, w-64)
@@ -86,6 +137,8 @@ npm run lint         # Should show no warnings or errors
 - **Prisma 7 breaking changes**: `datasourceUrl` constructor option no longer exists — must use `PrismaNeon` adapter. The `env()` helper from `prisma/config` throws on missing variables (unlike `process.env` which returns `undefined`), so use `process.env` for optional env var fallbacks.
 - **Generated client path**: Import from `@/generated/prisma/client` (app code) or `../src/generated/prisma/client.js` (scripts like seed.ts with `.js` extension for ESM).
 - **Port conflicts**: Dev server may use port 3001 if 3000 is in use. Check console output for actual port.
+- **Slug generation for Japanese titles**: All Japanese titles produce `base = "work"` after non-ASCII stripping, so slugs rely heavily on the random suffix. ASCII titles get proper slugified base (e.g. "Test Work E2E" → "test-work-e2e-ut8fw6").
+- **Database is shared**: The Neon database is shared between local dev and Vercel deployments. Test data created locally will appear in production. Consider cleaning up test data after testing.
 
 ## Known Issues
 - Nested `<a>` tags: ArtworkCard has multiple Link elements (thumbnail+title, AuthorBadge, License chip) which may trigger Next.js dev overlay warnings about nested anchors. This is a known prototype pattern.
